@@ -7,56 +7,83 @@ data = {
     "age": 25
 }
 
-users = []
+users = [{
+    "id": 0,
+    "login": "admin",
+    "password": "1111"
+}]
 
 changes = [{
-    "active": "false",
+    "active": False,
     "end": "142341asf",
     "id": 0,
     "start": "123241qwf"
 },
     {
-        "active": "false",
+        "active": False,
         "end": "142341asfqdq",
         "id": 1,
         "start": "123241qwf"
     },
     {
-        "active": "false",
+        "active": False,
         "end": "142341asfqdq",
         "id": 2,
         "start": "123241qwfqwd"
     }]
-changesIdCount = 0
+changesIdCount = 3
+usersId = 1
+
+employers = []
+employersId = 0
 
 
-@app.route("/user", methods=["POST"])
-def login():
+@app.route("/api-tort/login")
+def signin():
     user_login = request.form["login"]
     password = request.form["password"]
-    role = request.form["role"]
     for u in users:
-        if user_login == u["login"] and password == u["password"]:
-            session["login"] = user_login
-            session["role"] = role
+        if u["login"] == user_login and u["password"] == password:
+            return {
+                "data": {
+                    "user_token": "nbadodifhkwjdvl[mqbkefiyupl"
+                }
+            }
 
-    return "Not found", 404
-
-
-app.route("/adminApi")
-
-
-def admin_api():
-    if session["role"] == "admin":
-        print("actions....")
-    return "Forbidden for you", 403
-
-
-@app.route("/user", methods=["GET"])
-def hello_world():
-    return data, 201
+    return {
+        "error": {
+            "code": 403,
+            "message": "Forbidden. There are open shifts!"
+        }
+    }
 
 
+@app.route("/api-tort/user", methods=["GET"])
+def get_all_employer():
+    return {
+               "data": employers
+           }, 200
+
+
+
+@app.route("/api-tort/work-shift/<id>/open")
+def work_shift(id):
+    for i in changes:
+        if i["active"] == True:
+            return {
+                "error": {
+                    "code": 403,
+                    "message": "Forbidden. There are open shifts!"
+                }
+            }
+        if i["id"] == int(id):
+            i["active"] = True
+            return {"data": i}, 200
+
+
+#
+# Для примера
+#
 @app.route("/change/add", methods=["GET"])
 def change_add():
     global changesIdCount
@@ -66,7 +93,7 @@ def change_add():
         "id": changesIdCount,
         "start": start,
         "end": end,
-        "active": "false"
+        "active": False
     }
     changes.append(c)
     changesIdCount += 1
